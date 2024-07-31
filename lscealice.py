@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 ## standard packages
@@ -31,7 +31,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.backend_bases import MouseButton
 
 
-# In[3]:
+# In[2]:
 
 
 #%run ./load_code.ipynb
@@ -41,7 +41,7 @@ from matplotlib.backend_bases import MouseButton
 
 # ## basic file handling
 
-# In[4]:
+# In[3]:
 
 
 def load_dic_file(filename):
@@ -59,7 +59,7 @@ def write_dic_file(dic,filename):
 
 # ## utilities
 
-# In[5]:
+# In[4]:
 
 
 def common_depth_scale(depthdictionary,dz):
@@ -72,7 +72,7 @@ def common_depth_scale(depthdictionary,dz):
     return depth_scale
 
 
-# In[6]:
+# In[5]:
 
 
 def depth_sqz_str(depth1,xp1,xp2):
@@ -89,7 +89,7 @@ def depth_sqz_str(depth1,xp1,xp2):
     return depth_out
 
 
-# In[7]:
+# In[6]:
 
 
 def get_links(ax,xp1,xp2,yp1,yp2):
@@ -121,7 +121,7 @@ def get_links(ax,xp1,xp2,yp1,yp2):
 
 # # loading data
 
-# In[8]:
+# In[7]:
 
 
 def load_marked_points(aligfile):
@@ -148,7 +148,7 @@ def load_marked_points(aligfile):
         return xp1_dic,xp2_dic
 
 
-# In[9]:
+# In[8]:
 
 
 def load_profiles_data(aligfile):
@@ -169,7 +169,7 @@ def load_profiles_data(aligfile):
 
 # # export to csv
 
-# In[10]:
+# In[9]:
 
 
 def load_alig_array(aligfile,species,vertical_scale= None,labels = None):
@@ -217,7 +217,7 @@ def load_alig_array(aligfile,species,vertical_scale= None,labels = None):
 # ### UI preliminaries:
 # ### some utilities functions that can be defined outside of the tkinter frame class
 
-# In[11]:
+# In[10]:
 
 
 def CreateFigure():
@@ -264,7 +264,7 @@ def CreateFigure():
 
 
 
-# In[12]:
+# In[11]:
 
 
 def eventdist(event,artist):
@@ -315,7 +315,7 @@ def eventdist(event,artist):
     return dist_to_artist
 
 
-# In[13]:
+# In[12]:
 
 
 def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
@@ -377,7 +377,7 @@ def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
     return new_dic
 
 
-# In[14]:
+# In[13]:
 
 
 # remove matplotlib keybord shortcuts to use our owns
@@ -395,7 +395,7 @@ if 'right' in plt.rcParams['keymap.forward']:plt.rcParams['keymap.forward'].remo
 
 # # TKINTER APP
 
-# In[24]:
+# In[20]:
 
 
 class ALICE(tkinter.Frame):
@@ -1252,8 +1252,8 @@ class ALICE(tkinter.Frame):
         # between the two graphs
         # (shows the two values on the graph where they are supposed to be aligned)
         
-        self.vline1.set_xdata(self.anchor1)
-        self.vline2.set_xdata(self.anchor2)
+        self.vline1.set_xdata([self.anchor1])
+        self.vline2.set_xdata([self.anchor2])
 
         anchor1 = self.anchor1
         anchor2 = self.anchor2
@@ -1565,7 +1565,7 @@ class ALICE(tkinter.Frame):
 ####################################################################
 
 
-# In[25]:
+# In[21]:
 
 
 def main():
@@ -1590,7 +1590,7 @@ def startUI():
     main()
 
 
-# In[26]:
+# In[22]:
 
 
 if __name__ == '__main__':
