@@ -21,7 +21,7 @@ then run it directly from your terminal with
 lscealice
 ```
 
-- Finally, you can install it direclty in your python distribution using pip
+- Finally, you can install it in your python distribution using pip
 
 ```
 pip install lsce alice
