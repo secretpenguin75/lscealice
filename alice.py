@@ -1,30 +1,37 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[24]:
 
+
+## standard packages
+import os
 
 import tkinter
+from tkinter import ttk
 
 import datetime
 
+import pickle
+
+
+## additional packages
+
+#pandas
 import pandas as pd
 
-import os
-
-import pickle
+#numpy
 import numpy as np
 
+#matplotlib
 import matplotlib.pyplot as plt
-
 import matplotlib
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler
-
 from matplotlib.backend_bases import MouseButton
 
 
-# In[2]:
+# In[3]:
 
 
 #%run ./load_code.ipynb
@@ -34,7 +41,7 @@ from matplotlib.backend_bases import MouseButton
 
 # ## basic file handling
 
-# In[3]:
+# In[4]:
 
 
 def load_dic_file(filename):
@@ -52,7 +59,7 @@ def write_dic_file(dic,filename):
 
 # ## utilities
 
-# In[8]:
+# In[5]:
 
 
 def common_depth_scale(depthdictionary,dz):
@@ -65,12 +72,15 @@ def common_depth_scale(depthdictionary,dz):
     return depth_scale
 
 
-# In[4]:
+# In[6]:
 
 
 def depth_sqz_str(depth1,xp1,xp2):
+    # Core function of the interpolation, future improvements to be made
     # JUNE2024: we still need to improve this function for coinciding xp1 points (hiatus)
-    # roughly the same as np.interp but no error if xp1 is empty
+    # for now, roughly the same as np.interp but no error if xp1 is empty
+    
+    
     depth_out = np.full(depth1.shape,np.nan)
     if len(xp2)>0:
         # sort points
@@ -79,13 +89,10 @@ def depth_sqz_str(depth1,xp1,xp2):
     return depth_out
 
 
-# In[5]:
+# In[7]:
 
 
-def gety(depth,signal,xp):
-    return np.interp(xp,depth,signal)
-
-def getlinks(ax,xp1,xp2,yp1,yp2):
+def get_links(ax,xp1,xp2,yp1,yp2):
     
     combinedTransform = ax[1].transData + ax[0].transData.inverted()
 
@@ -114,7 +121,7 @@ def getlinks(ax,xp1,xp2,yp1,yp2):
 
 # # loading data
 
-# In[6]:
+# In[8]:
 
 
 def load_marked_points(aligfile):
@@ -141,7 +148,7 @@ def load_marked_points(aligfile):
         return xp1_dic,xp2_dic
 
 
-# In[7]:
+# In[9]:
 
 
 def load_profiles_data(aligfile):
@@ -207,12 +214,7 @@ def load_alig_array(aligfile,species,vertical_scale= None,labels = None):
     return df
 
 
-# In[11]:
-
-
-#import matplotlib as mpl
-
-
+# ### UI preliminaries:
 # ### some utilities functions that can be defined outside of the tkinter frame class
 
 # In[12]:
@@ -226,8 +228,6 @@ def CreateFigure():
 
     ax2 = fig.add_subplot(211)
     ax2.patch.set_alpha(0.5)
-
-    #combinedTransform = ax2.transData + ax1.transData.inverted()
 
     ax2.xaxis.tick_top()
     ax2.yaxis.tick_right()
@@ -264,7 +264,7 @@ def CreateFigure():
 
 
 
-# In[14]:
+# In[20]:
 
 
 def eventdist(event,artist):
@@ -289,8 +289,7 @@ def eventdist(event,artist):
     
     pt_data0 = [event.xdata, event.ydata]
     
-    combinedTransform = artist_ax.transData + event_ax.transData.inverted()
-
+    combinedTransform = event_ax.transData + artist_ax.transData.inverted()
     
     pt_data1 = combinedTransform.transform(pt_data0)
 
@@ -316,7 +315,7 @@ def eventdist(event,artist):
     return dist_to_artist
 
 
-# In[15]:
+# In[21]:
 
 
 def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
@@ -378,7 +377,7 @@ def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
     return new_dic
 
 
-# In[13]:
+# In[22]:
 
 
 # remove matplotlib keybord shortcuts to use our owns
@@ -396,10 +395,17 @@ if 'right' in plt.rcParams['keymap.forward']:plt.rcParams['keymap.forward'].remo
 
 # # TKINTER APP
 
-# In[16]:
+# In[ ]:
+
+
+
+
+
+# In[23]:
 
 
 class ALICE(tkinter.Frame):
+   
 
     def __init__(self, parent):
         
@@ -408,24 +414,32 @@ class ALICE(tkinter.Frame):
         self.parent = parent  
         
         self.initFigure()
-
-        self.initCanvas()
         
         self.initAligVariables()
         
         self.initUI()
         
+     
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    # function to initalize the interface
         
     def initFigure(self):
+        
+        # This will create the fig and ax objects
+        # and all of the artists (lines, scatter plots) present in the axes
+        # and assign them to self. variables to be udpated later.
         
         self.fig,self.ax = CreateFigure()
 
         self.CreateObjects()
-        
-        #self.line1, = self.ax[0].plot([],[],color='blue')
-        
-        #self.line2, = self.ax[1].plot([],[],color='red')
 
+        # after fig and axes have been created, we asign them to the canvas
+        # to be injected in the tkinter interface
+        
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)  # A tk.DrawingArea.
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
     
         
     def CreateObjects(self):
@@ -476,17 +490,7 @@ class ALICE(tkinter.Frame):
         
         #for xp1 selection indication
         self.xp1hl = self.ax[0].scatter([],[],s=50,color='gray')
-        
 
-    def initCanvas(self):
-        
-        
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.parent)  # A tk.DrawingArea.
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-        
-    def update_buttons(self):
-        
-        self.manual_offset_value_button.configure(text=inputvalue)
         
     def initAligVariables(self):
         
@@ -494,6 +498,9 @@ class ALICE(tkinter.Frame):
         
         
     def initUI(self):
+        
+        # crate all the buttons and dropdown menus to be greyed out
+        # before an alignment file is opened
         
         ## TOOLBAR
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.parent)
@@ -536,7 +543,7 @@ class ALICE(tkinter.Frame):
         self.minmaxscaling_BooleanVar.set(False)
         
         ######################################################
-        #EMPTY LISTS TO INIT SPCIES AND PROFILE MENU?
+        #EMPTY LISTS TO INIT SPCIES AND PROFILE MENU(?)
         
         default_list = ['']
         default_offset = 0
@@ -548,11 +555,11 @@ class ALICE(tkinter.Frame):
         ######################################################
         # DEFINE BUTTONS
         
-        self.resetview_button = tkinter.Button(master=self.parent, text="Reset View", command=self.resetView)
+        self.resetview_button = tkinter.Button(master=self.parent, text="Reset View", command=self.updateXYlims)
         self.resetview_button.configure(state="disabled")
         self.resetview_button.pack(side=tkinter.LEFT)
 
-        offset_modes_list = ['time shift','common depth','manual']
+        offset_modes_list = ['match tops','time shift','common depth','manual']
 
         
         # set all buttons disabled by default (until an alignment file is opened)
@@ -576,10 +583,16 @@ class ALICE(tkinter.Frame):
         self.manual_offset_value_button.pack(side=tkinter.LEFT)
 
         self.species_menu = tkinter.OptionMenu(self.parent, self.species_on_display_StringVar, *default_list)
+        #tested but not working; combobox to have a scrollbar
+        #self.species_menu = ttk.Combobox(self.parent, textvariable = self.species_on_display_StringVar, values = default_list)
+
         self.species_menu.configure(state="disabled")
         self.species_menu.pack(side=tkinter.LEFT)
 
         self.profile_menu = tkinter.OptionMenu(self.parent, self.profile_on_display_StringVar, *default_list)
+        #tested but not working; combobox to have a scrollbar
+        #self.profile_menu = ttk.Combobox(self.parent, textvariable = self.profile_on_display_StringVar, values = default_list)
+
         self.profile_menu.configure(state="disabled")
         self.profile_menu.pack(side=tkinter.LEFT)
 
@@ -588,14 +601,12 @@ class ALICE(tkinter.Frame):
 
         cb_registry = self.ax[1].callbacks
         cid = cb_registry.connect('ylim_changed', self.relim_callback)
-
-#####################33
-
-        #self.txt = tkinter.Text(self)
-        #self.txt.pack(fill=tkinter.BOTH, expand=1)
         
-        #self.plotbutton=tkinter.Button(master=self.parent, text="plot", command=lambda: self.plot())
-        #self.plotbutton.pack(fill=tkinter.BOTH, expand=1)
+        
+    #####################################################################
+    #####################################################################
+    #####################################################################
+    ##### FUNCTIONS FOR THE "FILE" dropdown menu
         
     def export_to_csv(self):
         
@@ -657,6 +668,8 @@ class ALICE(tkinter.Frame):
                 
                 offsets1 = self.points1.get_offsets()
                 xp1,yp1 = zip(*offsets1)
+                
+                combinedTransform = self.ax[0].transData + self.ax[1].transData.inverted()
         
                 offsets2 = self.points2.get_offsets()
                 xp2,yp2 = zip(*offsets2)
@@ -671,10 +684,13 @@ class ALICE(tkinter.Frame):
                 if np.min(dists[:,ind])<.001:
                     xi1 = xp1[ind]
                     yi1 = yp1[ind]
+                    
+                    xi1_on_ax2,yi1_on_ax2 = combinedTransform.transform([xi1,yi1])
+                    
                     xi2 = xp2[ind]
                     yi2 = yp2[ind]
                 
-                    self.update_hl([xi1,xi2],[yi1,yi2])
+                    self.update_hl([xi1_on_ax2,xi2],[yi1_on_ax2,yi2])
                     self.pointshl.set_visible(True)
                     
                     tag = str(self.tiepoints[self.profile_on_display][ind]['species'])
@@ -692,12 +708,23 @@ class ALICE(tkinter.Frame):
                 self.tagsshow.set_visible(False)
                 self.fig.canvas.draw_idle()
                 
+                
+    def get_linedata(self):
+        
+        depth1 = self.cores[self.profile_on_display][self.species_on_display]['depth']
+        depth2 = self.cores['REF'][self.species_on_display]['depth']
+        
+        signal1 = self.cores[self.profile_on_display][self.species_on_display]['data']
+        signal2 = self.cores['REF'][self.species_on_display]['data']
+        
+        return depth1,signal1,depth2,signal2
+    
+                
     def get_tiepoints(self):
         # convert the tiepoints stored in the dictionary to the xp1 and xp2 lists
         
-        tiepoints = self.tiepoints[self.profile_on_display]
-        xp1 = [bob['profile_depth'] for bob in tiepoints]
-        xp2 = [bob['ref_depth'] for bob in tiepoints]
+        xp1 = [bob['profile_depth'] for bob in self.tiepoints[self.profile_on_display]]
+        xp2 = [bob['ref_depth'] for bob in self.tiepoints[self.profile_on_display]]
         
         return xp1,xp2
         
@@ -727,9 +754,6 @@ class ALICE(tkinter.Frame):
 
         # event has x and y in data coordinates for ax2:
         pt_data2 = [event.xdata, event.ydata]
-
-        # Convert them into data coordinates for ax1:
-        pt_data1 = combinedTransform.transform(pt_data2)
     
         # extracting axes limits 
         # 1) to compute the distance in normalized units
@@ -747,6 +771,9 @@ class ALICE(tkinter.Frame):
         
             
         if event.inaxes is ax3:
+            
+            # Convert them into data coordinates for ax1:
+            pt_data1 = combinedTransform.transform(pt_data2)
         
             # center the view on the point clicked in the bottom plot
             ax1.set_xlim(pt_data1[0]-xrange1/2,pt_data1[0]+xrange1/2)
@@ -758,6 +785,9 @@ class ALICE(tkinter.Frame):
             self.relim_callback(ax2)
     
         if event.inaxes is ax2:
+            
+            # Convert them into data coordinates for ax1:
+            pt_data1 = combinedTransform.transform(pt_data2)
     
             #Left click: add point
             if event.button is MouseButton.LEFT:
@@ -830,7 +860,9 @@ class ALICE(tkinter.Frame):
         #self.tiepoints_history.append(self.tiepoints)
         #self.undo_redo_callback()
         
-        self.refreshFigure()
+        self.updateTiepoints()
+        self.updateLinks()
+        
         self.canvas.draw()
         
         self.saveState()
@@ -879,11 +911,11 @@ class ALICE(tkinter.Frame):
     
         if event.key == 'right' or event.key == 'left':
             n = profile_keys_available.index(current_profile)
-            if event.key =='left' and n<len(profile_keys_available)-1:
+            if event.key =='right' and n<len(profile_keys_available)-1:
                 profile_key = profile_keys_available[n+1]
                 self.profile_on_display_StringVar.set(profile_key)
 
-            if event.key == 'right' and n>0: 
+            if event.key == 'left' and n>0: 
                 profile_key = profile_keys_available[n-1]
                 self.profile_on_display_StringVar.set(profile_key)
             
@@ -891,17 +923,30 @@ class ALICE(tkinter.Frame):
     
         
     def offset_callback(self,*args):
+        
+        # callback that catches any change to the offsetmode dropdown menu
+        # and call to redraws the graph
             
         if self.offset_mode_StringVar.get() != 'manual':
             self.manual_offset_value_button.config(state='disabled')
         else:
             self.manual_offset_value_button.config(state='normal')
      
-        self.resetView()
+        #self.updateUI()
+
+        self.updateXYlims()
+        
+        self.updateLinks()
+        
+        #self.updateTiepoints()
+
+       
         self.canvas.draw()
         
     def relim_callback(self,ax):
-        # callback function to draw the rectangle of current view
+        
+        # callback function that catches any change to the ax(2) limits
+        # to draw the rectangle of current view
         # in the bottom preview
     
         xlim2 = ax.get_xlim()
@@ -917,6 +962,9 @@ class ALICE(tkinter.Frame):
     #print("New axis y-limits are", axes.get_ylim())
     
     def updateUI(self):
+        
+        # function called upon change of species and change of profile
+        # to gray out options in the drop down menu depending on what data are available.
         
         # only enable available species in species menu.
         menu = self.species_menu["menu"]
@@ -955,14 +1003,17 @@ class ALICE(tkinter.Frame):
         
         self.species_on_display = str(self.species_on_display_StringVar.get())
         
+        self.updateUI()
+
+        self.updateLines()
+        
         #self.relim_x()
         self.relim_y()
 
-        self.updateUI()
-       
-        self.makeFigure()
 
-        self.refreshFigure()
+        self.updateTiepoints()
+        
+        self.updateLinks()
                         
         self.canvas.draw()
         
@@ -974,7 +1025,8 @@ class ALICE(tkinter.Frame):
         self.manualoffsetvalue = float(inputvalue)
         
         self.relim_x()
-        self.refreshFigure()
+        self.updateLinks()
+        #self.updateTiepoints()
         self.canvas.draw()
             
     def _quit(self):
@@ -1024,24 +1076,16 @@ class ALICE(tkinter.Frame):
             self.species_on_display = self.species_keys[0]
             
         # initialize offset_mode
-        self.offset_mode = 'common depth'
+        self.offset_mode = 'match tops'
         
        
-    def makeFigure(self):
+    def updateLines(self):
         
-        #dates as still used in the get_anchor functions
-        #can use this again in the future but we want to add if statements in case 
-        #no metadata is specified
-        
-        #date1 = self.metadata[self.profile_on_display]['date']
-        #date2 = self.metadata['REF']['date']
+        # function to asign x and y data to the lines ploted
+        # should be called only upon change of species or change of profile to display       
     
-        depth1 = self.cores[self.profile_on_display][self.species_on_display]['depth']
-        depth2 = self.cores['REF'][self.species_on_display]['depth']
-        
-        signal1 = self.cores[self.profile_on_display][self.species_on_display]['data']
-        signal2 = self.cores['REF'][self.species_on_display]['data']
-    
+        depth1,signal1,depth2,signal2 = self.get_linedata()
+
     
         # Function to call when switching species or profile;
         # update lines data and redraw plot
@@ -1066,12 +1110,7 @@ class ALICE(tkinter.Frame):
     
         self.text_species.set_text(self.species_on_display)
         
-        # OFFSET
-    
-        self.anchor1,self.anchor2 = self.get_anchors()
-    
-        self.vline1.set_xdata(self.anchor1)
-        self.vline2.set_xdata(self.anchor2)
+        
         
     def get_anchors(self):
     
@@ -1113,26 +1152,58 @@ class ALICE(tkinter.Frame):
             
             anchor1 = depth1[0]
             anchor2 = depth2[0]+self.manualoffsetvalue
+            
+        if offset_mode_str == 'match tops':
+            
+            anchor1 = depth1[0]
+            anchor2 = depth2[0]
         
         return anchor1,anchor2
     
-                
-    def refreshFigure(self):                 
+    def updateLinks(self):
         
-        # defining shortnames for readability
+        # Since we draw links on ax2 based on tiepoints on ax1
+        # the links depend on the limits of the axes 
+        # this is why we need to keep them separate from the tiepoints
+        # and to update them upon change of axis (while tiepoints naturally follow the axes)
         
-        depth1 = self.cores[self.profile_on_display][self.species_on_display]['depth']
-        depth2 = self.cores['REF'][self.species_on_display]['depth']
-        
-        signal1 = self.cores[self.profile_on_display][self.species_on_display]['data']
-        signal2 = self.cores['REF'][self.species_on_display]['data']
+        depth1,signal1,depth2,signal2 = self.get_linedata()
         
         xp1,xp2 = self.get_tiepoints()
         
-        yp1 = gety(depth1,signal1,xp1)
-        yp2 = gety(depth2,signal2,xp2)
+        yp1 = np.interp(xp1,depth1,signal1)
+        yp2 = np.interp(xp2,depth2,signal2)
         
-        xp_links,yp_links = getlinks(self.ax,xp1,xp2,yp1,yp2)
+        xp_links,yp_links = get_links(self.ax,xp1,xp2,yp1,yp2)
+        self.links.set_data(xp_links,yp_links)  
+
+                
+    def updateTiepoints(self):
+        
+        # A function to be called each time we manipulate tiepoints:
+        # redraws the preview in the bottom graph
+        # redraws the tiepoints and
+        # redraws the links
+        
+        # defining shortnames for readability
+        
+        
+        depth1,signal1,depth2,signal2 = self.get_linedata()
+        
+        xp1,xp2 = self.get_tiepoints()
+        
+        yp1 = np.interp(xp1,depth1,signal1)
+        yp2 = np.interp(xp2,depth2,signal2)
+        
+        #xp_links,yp_links = get_links(self.ax,xp1,xp2,yp1,yp2)
+        
+        # update tiepoints
+        
+        self.points1.set_offsets(np.c_[xp1,yp1])
+        self.points2.set_offsets(np.c_[xp2,yp2])
+        #self.links.set_data(xp_links,yp_links)  
+    
+        self.updateLinks()
         
         # update preview
     
@@ -1140,14 +1211,9 @@ class ALICE(tkinter.Frame):
         
         signal_new = np.interp(depth2,depth_new,signal1,left=np.nan,right=np.nan)    
         
-        self.points1.set_offsets(np.c_[xp1,yp1])
-        self.points2.set_offsets(np.c_[xp2,yp2])
-        self.links.set_data(xp_links,yp_links)  
-        
         self.line3.set_xdata(depth2) # redundent
         self.line3.set_ydata(signal_new)
         
-       
         
         # Set highlight
     
@@ -1159,21 +1225,24 @@ class ALICE(tkinter.Frame):
         else:
             self.line1.set_linewidth(1.5)
             self.line2.set_linewidth(3)
+            
         
-    def resetView(self):
+    def updateXYlims(self):
     
         self.relim_x()
         self.relim_y()
         self.canvas.draw()
         
     def relim_x(self):
+        
+        #dates as still used in the get_anchor functions
+        #can use this again in the future but we want to add if statements in case 
+        #no metadata is specified
     
         #date1 = self.cores[self.profile_on_display]['time']
         #date2 = self.cores['REF']['time']
-        depth1 = self.cores[self.profile_on_display][self.species_on_display]['depth']
-        depth2 = self.cores['REF'][self.species_on_display]['depth']
-        signal1 = self.cores[self.profile_on_display][self.species_on_display]['data']
-        signal2 = self.cores['REF'][self.species_on_display]['data']
+        
+        depth1,signal1,depth2,signal2 = self.get_linedata()
     
         rangex1 = np.nanmax(depth1)-np.nanmin(depth1)
         rangex2 = np.nanmax(depth2)-np.nanmin(depth2)
@@ -1181,7 +1250,16 @@ class ALICE(tkinter.Frame):
         xlim1 = (np.nanmin(depth1)-rangex1/20,np.nanmax(depth1)+rangex1/20)
         xlim2 = (np.nanmin(depth2)-rangex2/20,np.nanmax(depth2)+rangex2/20)
         
+        # OFFSET
+    
         self.anchor1,self.anchor2 = self.get_anchors()
+            
+        # these are just graphical hints to ensure we have set the alignment right
+        # between the two graphs
+        # (shows the two values on the graph where they are supposed to be aligned)
+        
+        self.vline1.set_xdata(self.anchor1)
+        self.vline2.set_xdata(self.anchor2)
 
         anchor1 = self.anchor1
         anchor2 = self.anchor2
@@ -1199,10 +1277,8 @@ class ALICE(tkinter.Frame):
         
         #date1 = self.cores[self.profile_on_display]['time']
         #date2 = self.cores['REF']['time']
-        depth1 = self.cores[self.profile_on_display][self.species_on_display]['depth']
-        depth2 = self.cores['REF'][self.species_on_display]['depth']
-        signal1 = self.cores[self.profile_on_display][self.species_on_display]['data']
-        signal2 = self.cores['REF'][self.species_on_display]['data']
+        
+        depth1,signal1,depth2,signal2 = self.get_linedata()
     
         rangey1 = np.nanmax(signal1)-np.nanmin(signal1)
         rangey2 = np.nanmax(signal2)-np.nanmin(signal2)
@@ -1256,7 +1332,7 @@ class ALICE(tkinter.Frame):
     
     def enableUI(self):
         
-        default_offset_mode = 'common depth'
+        default_offset_mode = 'match tops'
         
         self.resetview_button.configure(state="normal")
         self.offset_mode_menu.configure(state="normal")
@@ -1294,6 +1370,48 @@ class ALICE(tkinter.Frame):
         #test
         #fig.canvas.mpl_connect("motion_notify_event", hover)
         
+        
+            
+
+        
+    def onOpenAlig(self):
+
+        ftypes = [('Pickle files', '*.pkl'), ('All files', '*')]
+        dlg = tkinter.filedialog.Open(self, filetypes = ftypes)
+        fl = dlg.show()
+
+        if fl != '':
+            
+            
+            self.filename = fl
+                        
+            self.StartApp()
+            
+            
+    def StartApp(self):
+        
+        self.loadData()
+            
+        self.enableUI()
+            
+        self.updateUI()
+            
+        self.updateLines()
+        
+        self.updateXYlims()
+        
+        self.updateTiepoints()
+        
+        self.updateLinks()
+                        
+        self.canvas.draw()
+        
+        
+        
+################################################################
+################################################################
+# Code below is to define the pop up window that allows the user to initialize
+# a new alignment file from raw data.
         
 
         
@@ -1446,38 +1564,9 @@ class ALICE(tkinter.Frame):
             menu.add_command(label=string, 
                              command=lambda value=string: self.reference_selected_StringVar.set(value))
             
-        
-
-        
-    def onOpenAlig(self):
-
-        ftypes = [('Pickle files', '*.pkl'), ('All files', '*')]
-        dlg = tkinter.filedialog.Open(self, filetypes = ftypes)
-        fl = dlg.show()
-
-        if fl != '':
-            
-            
-            self.filename = fl
-                        
-            self.StartApp()
-            
-            
-    def StartApp(self):
-        
-        self.loadData()
-            
-        self.enableUI()
-            
-        self.updateUI()
-            
-        self.makeFigure()
-
-        self.refreshFigure()
-            
-        self.resetView()
-                        
-        self.canvas.draw()    
+####################################################################
+####################################################################
+####################################################################
 
 
 def main():
