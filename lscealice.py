@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[24]:
+# In[2]:
 
 
 ## standard packages
@@ -217,7 +217,7 @@ def load_alig_array(aligfile,species,vertical_scale= None,labels = None):
 # ### UI preliminaries:
 # ### some utilities functions that can be defined outside of the tkinter frame class
 
-# In[12]:
+# In[11]:
 
 
 def CreateFigure():
@@ -264,7 +264,7 @@ def CreateFigure():
 
 
 
-# In[20]:
+# In[12]:
 
 
 def eventdist(event,artist):
@@ -315,7 +315,7 @@ def eventdist(event,artist):
     return dist_to_artist
 
 
-# In[21]:
+# In[13]:
 
 
 def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
@@ -377,7 +377,7 @@ def initAlignmentFile(datafiles,metadatafiles,ref_lab,min_depth,max_depth):
     return new_dic
 
 
-# In[22]:
+# In[14]:
 
 
 # remove matplotlib keybord shortcuts to use our owns
@@ -395,13 +395,7 @@ if 'right' in plt.rcParams['keymap.forward']:plt.rcParams['keymap.forward'].remo
 
 # # TKINTER APP
 
-# In[ ]:
-
-
-
-
-
-# In[23]:
+# In[24]:
 
 
 class ALICE(tkinter.Frame):
@@ -1380,8 +1374,10 @@ class ALICE(tkinter.Frame):
         dlg = tkinter.filedialog.Open(self, filetypes = ftypes)
         fl = dlg.show()
 
-        if fl != '':
-            
+        # not really sure how things work here
+        # closing window without making a selection
+        # seem to result in () or '' sometimes...
+        if fl != () and fl!='':
             
             self.filename = fl
                         
@@ -1569,6 +1565,9 @@ class ALICE(tkinter.Frame):
 ####################################################################
 
 
+# In[25]:
+
+
 def main():
 
     root = tkinter.Tk()
@@ -1586,10 +1585,16 @@ def main():
         
         
     root.mainloop()  
+    
+def startUI():
+    main()
+
+
+# In[26]:
 
 
 if __name__ == '__main__':
-    main()  
+    main()
 
 
 # In[ ]:

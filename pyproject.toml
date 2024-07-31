@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "lscealice"
+version = "0.1.0"
+description = "A versatile tkinter interface to align icecore data"
+authors = ["Adrien Ooms"]
+license = "CC0-1.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+matplotlib = "^3.9.1"
+pandas = "^2.2.2"
+numpy = "^2.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+startUI = "lscealice:startUI"
