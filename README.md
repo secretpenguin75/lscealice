@@ -24,7 +24,7 @@ lscealice
 - Finally, you can install it in your python distribution using pip
 
 ```
-pip install lsce alice
+pip install lscealice
 ```
 
 Then within python run
