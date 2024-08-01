@@ -13,7 +13,7 @@ Depending on your workflow, you can either
 - You can also install it using [pipx](https://pipx.pypa.io/latest/installation/) with
 
 ```
-pipx install git+https://github.com/secretpenguin75/lscealice.git
+pipx install lscealice
 ```
 then run it directly from your terminal with
 
