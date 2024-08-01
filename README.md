@@ -8,7 +8,7 @@ _this doc file is under construction 👷‍♀️_
 
 Depending on your workflow, you can either 
 
-- download and run the jupyter notebook `.ipynb` or python `.py` file. Make sure you have the right dependencies installed.
+- manual: download and run the jupyter notebook `.ipynb` or python `.py` file. Make sure you have the right dependencies installed in your python distribution.
 
 - You can also install it using [pipx](https://pipx.pypa.io/latest/installation/) with
 
