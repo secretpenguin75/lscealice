@@ -13,7 +13,7 @@ Depending on your workflow, you can either
 - You can also install it using [pipx](https://pipx.pypa.io/latest/installation/) with
 
 ```
-pipx install git+https://github.com/secretpenguin75/lscealice.git
+pipx install lscealice
 ```
 then run it directly from your terminal with
 
@@ -21,10 +21,10 @@ then run it directly from your terminal with
 lscealice
 ```
 
-- Finally, you can install it in your python distribution using pip
+- Or if you don't want to install pipx, you can install it in your python distribution using pip
 
 ```
-pip install lsce alice
+pip install lscealice
 ```
 
 Then within python run
