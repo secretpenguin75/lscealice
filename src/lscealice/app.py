@@ -1586,7 +1586,7 @@ def main():
         
     root.mainloop()  
     
-def startUI():
+def launch():
     main()
 
 
