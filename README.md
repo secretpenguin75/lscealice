@@ -29,8 +29,8 @@ pip install lscealice
 
 Then within python run
 ```
-import lscealice
-lscealice.startUI()
+from lscealice import app
+app.startUI()
 ```
 
 Have fun!🐧
