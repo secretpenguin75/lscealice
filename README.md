@@ -30,7 +30,7 @@ pip install lscealice
 Then within python run
 ```
 from lscealice import app
-app.startUI()
+app.launch()
 ```
 
 Have fun!🐧
