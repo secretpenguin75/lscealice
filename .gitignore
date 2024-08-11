@@ -1,2 +1,20 @@
-test.pkl
+__pycache__/
+
+.venv/
+.tox/
+
+build/
 dist/
+
+.ruff_cache/
+
+.coverage
+coverage.lcov
+coverage.json
+coverage.xml
+htmlcov/
+
+prof/
+
+# ignore local alignment .pkl files used for testing
+*.pkl
