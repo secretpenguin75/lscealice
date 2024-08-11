@@ -18,3 +18,6 @@ prof/
 
 # ignore local alignment .pkl files used for testing
 *.pkl
+
+#old trash
+.ipynb_checkpoints/
