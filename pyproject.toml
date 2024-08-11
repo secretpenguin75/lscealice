@@ -31,7 +31,7 @@ optional = true
 
 [tool.poetry.group.type.dependencies]
 pyright = "^1.1.342"
-
+pandas-stubs = "^2.2.2.240807"
 
 [tool.poetry.group.test]
 optional = true
