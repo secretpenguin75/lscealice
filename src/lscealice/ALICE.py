@@ -27,9 +27,10 @@ from tkinter.filedialog import askopenfilenames, asksaveasfilename, Open
 from tkinter.simpledialog import askstring
 
 from .dic import Dic, Tiepoint, initAlignmentFile, load_dic_file, write_dic_file
-from .figures import CreateFigure, eventdist
+from .figures import CreateFigure_main,CreateFigure_preview, eventdist
+from .figures import _line,_vline,_scatter,_text,_annotate
 from .magic import combine, transform
-from .utils import get_links, depth_sqz_str
+from .utils import get_links, depth_sqz_str, map_to_ax
 from .export import load_alig_array
 
 
@@ -71,81 +72,53 @@ class ALICE(tkinter.Frame):
         # and all of the artists (lines, scatter plots) present in the axes
         # and assign them to self. variables to be udpated later.
 
-        self.fig, self.ax = CreateFigure()
+        self.fig, self.ax, self.axt, self.axc = CreateFigure_main()
+
+        self.fig3, self.ax3 = CreateFigure_preview()
 
         self.CreateObjects()
 
-        # after fig and axes have been created, we asign them to the canvas
-        # to be injected in the tkinter interface
 
-        self.canvas = FigureCanvasTkAgg(
-            self.fig, master=self.parent
-        )  # A tk.DrawingArea.
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-    def _line(self, i: int, color: str, lw: float = 1, ls: Optional[str] = None):
-        ax = self.ax[i]
-        plot = ax.plot([], [], color=color, lw=lw, ls=ls)  # type: ignore
-        return plot[0]
+    def canvas_draw(self):
 
-    def _vline(self, i: int, color: str):
-        ax = self.ax[i]
-        return ax.axvline(np.nan, lw=0.5, color=color)  # type: ignore
+        self.fig.canvas.draw_idle()  # type: ignore
+        self.fig3.canvas.draw_idle()  # type: ignore
 
-    def _scatter(self, i: int, color: str):
-        ax = self.ax[i]
-        return ax.scatter([], [], color=color, s=50)  # type: ignore
-
-    def _text(self, i: int, x: float, y: float, s: str):
-        ax = self.ax[i]
-        return ax.text(  # type: ignore
-            x,
-            y,
-            s,
-            transform=ax.transAxes,
-            fontsize=12,
-            fontweight="heavy",
-        )
-
-    def _annotate(self, i: int, text: str):
-        ax = self.ax[i]
-        return ax.annotate(  # type: ignore
-            text, xy=(0, 0), xytext=(0, 0)
-        )
 
     def CreateObjects(self):
         # line 1 shows profile of profile_key in center plot
-        self.line1 = self._line(0, "blue")
+        self.line1 = _line(self.ax[0], "blue")
 
         # line 2 shows profile of ref_pit in center plot
-        self.line2 = self._line(1, "red")
+        self.line2 = _line(self.ax[1], "red")
 
         # vline for anchors
-        self.vline1 = self._vline(0, "blue")
-        self.vline2 = self._vline(1, "red")
+        self.vline1 = _vline(self.ax[0], "blue")
+        self.vline2 = _vline(self.ax[1], "red")
 
         #################################
         # Aligned profile at the bottom
         # new preview: using depth2 and the interpolated signal from depth_new
         # directly shows the shape of the signal after squeeze and stretch
-        self.line3 = self._line(2, "darkblue", lw=1.5)
+        self.line3 = _line(self.ax3, "darkblue", lw=1.5)
 
         # line5 is the profile of ref_pit at the bottom
-        self.line4 = self._line(2, "orange", lw=1.5)
+        self.line4 = _line(self.ax3, "orange", lw=1.5)
 
         ##################################################
         # initialize empty scatter plot to show selected points
 
-        self.points1 = self._scatter(0, "blue")
-        self.points2 = self._scatter(1, "red")
+        self.points1 = _scatter(self.axt, "blue")
+        self.points2 = _scatter(self.axt, "red")
 
-        self.links = self._line(1, "grey", lw=0.5, ls="--")
+        self.links = _line(self.axt, "grey", lw=0.5, ls="--")
 
         ################################
         # text
 
-        self.text_species = self._text(1, 0.80, 0.9, "species")
-        self.text_profile = self._text(1, 0.05, 0.9, "profile_key")
+        self.text_species = _text(self.ax[1], 0.80, 0.9, "species")
+        self.text_profile = _text(self.ax[1], 0.05, 0.9, "profile_key")
 
         # not in use
         # self.text_date = self.ax[1].text(0.05, 0.8, 'sample_date', transform=self.ax[1].transAxes,fontsize=12,fontweight='heavy')
@@ -159,28 +132,47 @@ class ALICE(tkinter.Frame):
             edgecolor="gray",
             facecolor="none",
         )
-        self.ax[2].add_patch(self.rect)
+        self.ax3.add_patch(self.rect)
 
         # for points highlight when hovering
-        self.pointshl = self._scatter(1, "k")
-        self.tagsshow = self._annotate(1, "")
+        self.pointshl = _scatter(self.axt, "k")
+        self.tagsshow = _annotate(self.axt, "")
 
         # for xp1 selection indication
-        self.xp1hl = self._scatter(0, "gray")
+        self.xp1hl = _scatter(self.ax[0], "gray")
 
     def initAligVariables(self):
         self.xp1selection = None
+        self.hl_ind = None
 
     def initUI(self):
         # crate all the buttons and dropdown menus to be greyed out
         # before an alignment file is opened
 
+        ## CANVAS
+        # after fig and axes have been created, we asign them to the canvas
+        # to be injected in the tkinter interface
+
+        self.canvas = FigureCanvasTkAgg(
+            self.fig, master=self.parent
+        )  # A tk.DrawingArea.
+
+        self.canvas_preview = FigureCanvasTkAgg(
+            self.fig3, master=self.parent
+        )  # A tk.DrawingArea.
+
+        self.canvas.get_tk_widget().config(height=400)
+        self.canvas_preview.get_tk_widget().config(height=200)
+
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.canvas_preview.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
         ## TOOLBAR
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.parent)
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
         self.toolbar.update()
 
-        self.pack(fill=tkinter.BOTH, expand=1)  # does it need to pack itself?
+        self.pack(fill=tkinter.BOTH, expand=True)  # does it need to pack itself?
 
         menubar = tkinter.Menu(self.parent)
         self.parent.config(menu=menubar)
@@ -350,19 +342,13 @@ class ALICE(tkinter.Frame):
         assert isinstance(event, LocationEvent)
         # vis = self.pointshl.get_visible()
 
-        if event.inaxes == self.ax[1]:
-            # dist = (np.array(x)-mousedata[0])**2+(np.array(y)-mousedata[1])**2
+        if event.inaxes == self.axc:
+
+            # we wish to find the closest point in points1 and points2
             dist1 = eventdist(event, self.points1)
             dist2 = eventdist(event, self.points2)
 
             if dist1 is not None and dist2 is not None:
-                offsets1 = self.points1.get_offsets()
-                xp1, yp1 = zip(*offsets1)
-
-                combinedTransform = combine(self.ax[0].transData, self.ax[1].transData)
-
-                offsets2 = self.points2.get_offsets()
-                xp2, yp2 = zip(*offsets2)
 
                 dist1 = dist1[: len(dist2)]
                 dists = np.stack((dist1, dist2))
@@ -375,37 +361,44 @@ class ALICE(tkinter.Frame):
                     ),
                 )[1]
 
+
                 # TODO july 10th: instead of closest distance, use points2.contains(event)
                 # and with a ghost scatter plot for points1 (alpha = 0)
                 if np.min(dists[:, ind]) < 0.001:
+
+                    self.hl_ind = ind
+
+                    offsets1 = self.points1.get_offsets()
+                    xp1, yp1 = zip(*offsets1)
+
+                    offsets2 = self.points2.get_offsets()
+                    xp2, yp2 = zip(*offsets2)
+
                     xi1 = xp1[ind]
                     yi1 = yp1[ind]
-
-                    t: Callable[[tuple[float, float]], tuple[float, float]] = (
-                        combinedTransform.transform
-                    )  # type: ignore
-                    xi1_on_ax2, yi1_on_ax2 = t((xi1, yi1))
 
                     xi2 = xp2[ind]
                     yi2 = yp2[ind]
 
-                    self.update_hl((xi1_on_ax2, xi2), (yi1_on_ax2, yi2))
+                    self.update_hl((xi1, xi2), (yi1, yi2))
                     self.pointshl.set_visible(True)
 
                     tag = str(self.tiepoints[self.profile_on_display][ind]["species"])
                     self.update_tagsshow(xi2, yi2, tag)
                     self.tagsshow.set_visible(True)
-                    self.fig.canvas.draw_idle()  # type: ignore
+                    self.canvas_draw()
 
                 else:
+                    self.hl_ind = None
                     self.pointshl.set_visible(False)
                     self.tagsshow.set_visible(False)
-                    self.fig.canvas.draw_idle()  # type: ignore
+                    self.canvas_draw()
 
             else:
+                self.hl_ind = None
                 self.pointshl.set_visible(False)
                 self.tagsshow.set_visible(False)
-                self.fig.canvas.draw_idle()  # type: ignore
+                self.canvas_draw()
 
     def get_linedata(self):
         depth1 = self.cores[self.profile_on_display][self.species_on_display]["depth"]
@@ -432,23 +425,23 @@ class ALICE(tkinter.Frame):
         # change names later?
         ax1 = self.ax[0]
         ax2 = self.ax[1]
-        ax3 = self.ax[2]
+
+        axc = self.axc
+        #ax3 = self.ax3
 
         # Maybe a nicer way to do this?
         # I just want to ignore clicks when zoom or pan is selected
         if not self.toolbar.mode.name == "NONE":
             return
 
-        # pick is collected by ax2 which is on top of ax1
+        # pick is collected by axc which is on top of ax1,ax2 and axt
         # we use combinedtransform to get the corresponding point
         # on ax1 based on the event coordinates
-
-        combinedTransform = combine(ax2.transData, ax1.transData)
 
         # event has x and y in data coordinates for ax2:
         assert event.xdata is not None
         assert event.ydata is not None
-        pt_data2 = (event.xdata, event.ydata)
+        pt_data = (event.xdata, event.ydata)
 
         # extracting axes limits
         # 1) to compute the distance in normalized units
@@ -464,22 +457,17 @@ class ALICE(tkinter.Frame):
         xrange2 = xlim2[1] - xlim2[0]
         yrange2 = ylim2[1] - ylim2[0]
 
-        if event.inaxes is ax3:
+
+
+        if event.inaxes is axc:
+
+            combinedTransform1 = combine(axc.transData, ax1.transData)
+            combinedTransform2 = combine(axc.transData, ax2.transData)
+
+
             # Convert them into data coordinates for ax1:
-            pt_data1 = transform(combinedTransform)(pt_data2)
-
-            # center the view on the point clicked in the bottom plot
-            ax1.set_xlim(pt_data1[0] - xrange1 / 2, pt_data1[0] + xrange1 / 2)
-            ax1.set_ylim(pt_data1[1] - yrange1 / 2, pt_data1[1] + yrange1 / 2)
-            ax2.set_xlim(pt_data2[0] - xrange1 / 2, pt_data2[0] + xrange2 / 2)
-            ax2.set_ylim(pt_data2[1] - yrange1 / 2, pt_data2[1] + yrange2 / 2)
-
-            # update rectangle view
-            self.relim_callback(ax2)
-
-        if event.inaxes is ax2:
-            # Convert them into data coordinates for ax1:
-            pt_data1 = transform(combinedTransform)(pt_data2)
+            pt_data1 = transform(combinedTransform1)(pt_data)
+            pt_data2 = transform(combinedTransform2)(pt_data)
 
             # Left click: add point
             if event.button is MouseButton.LEFT:
@@ -512,6 +500,8 @@ class ALICE(tkinter.Frame):
                         ref_depth=depth2[ind],
                         species=self.species_on_display,
                     )
+
+
                     self.tiepoints[self.profile_on_display].append(new_tiepoint)
 
                     # switch back to non selection mode
@@ -522,7 +512,8 @@ class ALICE(tkinter.Frame):
             if event.button is MouseButton.RIGHT:
                 # a right click when marked points are all paired will remove the closest marked point
                 if self.xp1selection is None:
-                    if len(self.tiepoints[self.profile_on_display]) > 0 and vis is True:
+                    if len(self.tiepoints[self.profile_on_display]) > 0 and not self.hl_ind is None:
+
                         # warning: here we rely on the fact that indices are the same
                         # for the scatter artist points1 xy data
                         # and for xp1,xp2 (a priori no reason that is it scrambled in points?...)
@@ -530,25 +521,11 @@ class ALICE(tkinter.Frame):
                         # and we use the same index to delete points in self.tiepoints
                         # watch out for bugs!
 
-                        xpdist1 = eventdist(event, self.points1)
-                        assert xpdist1 is not None
-                        xpdist2 = eventdist(event, self.points2)
-                        assert xpdist2 is not None
-                        # to delete closest point, either on line1 or line2
-                        xp_dists = np.stack((xpdist1, xpdist2))
+                        del self.tiepoints[self.profile_on_display][self.hl_ind]
 
-                        ind = cast(
-                            tuple[NDArray[np.int64], NDArray[np.int64]],
-                            np.unravel_index(
-                                masked_array(
-                                    xp_dists, mask=np.isnan(xp_dists)
-                                ).argmin(),  # type: ignore
-                                xp_dists.shape,
-                            ),
-                        )[1]
-
-                        del self.tiepoints[self.profile_on_display][ind]
+                        self.hl_ind = None
                         self.pointshl.set_visible(False)
+                        self.tagsshow.set_visible(False)
 
                     # a right click after selecting the first point simply removes the first point
                 else:
@@ -559,11 +536,63 @@ class ALICE(tkinter.Frame):
         # self.undo_redo_callback()
 
         self.updateTiepoints()
-        self.updateLinks()
 
-        self.canvas.draw()
+        self.canvas_draw()
 
         self.saveState()
+
+    def on_pick3(self,event: Event):
+
+        # change names later?
+        ax1 = self.ax[0]
+        ax2 = self.ax[1]
+
+        axc = self.axc
+        ax3 = self.ax3
+
+        # Maybe a nicer way to do this?
+        # I just want to ignore clicks when zoom or pan is selected
+        if not self.toolbar.mode.name == "NONE":
+            return
+
+        # event has x and y in data coordinates for ax2:
+        assert event.xdata is not None
+        assert event.ydata is not None
+        pt_data1 = (event.xdata, event.ydata)
+
+        # extracting axes limits
+        # 1) to compute the distance in normalized units
+        # 2) to use for relim using bottom plot
+
+        xlim1 = ax1.get_xlim()
+        ylim1 = ax1.get_ylim()
+        xlim2 = ax2.get_xlim()
+        ylim2 = ax2.get_ylim()
+
+        xrange1 = xlim1[1] - xlim1[0]
+        yrange1 = ylim1[1] - ylim1[0]
+        xrange2 = xlim2[1] - xlim2[0]
+        yrange2 = ylim2[1] - ylim2[0]
+
+        if event.inaxes is self.ax3:
+
+            combinedTransform1 = combine(ax1.transData, ax2.transData)
+
+            # Convert them into data coordinates for ax1:
+            pt_data2 = transform(combinedTransform1)(pt_data1)
+
+            # center the view on the point clicked in the bottom plot
+            ax1.set_xlim(pt_data1[0] - xrange1 / 2, pt_data1[0] + xrange1 / 2)
+            ax1.set_ylim(pt_data1[1] - yrange1 / 2, pt_data1[1] + yrange1 / 2)
+            ax2.set_xlim(pt_data2[0] - xrange1 / 2, pt_data2[0] + xrange2 / 2)
+            ax2.set_ylim(pt_data2[1] - yrange1 / 2, pt_data2[1] + yrange2 / 2)
+
+            # update rectangle view
+            self.relim_callback(ax2)
+        
+        self.updateTiepoints()
+        self.canvas_draw()
+
 
     def on_press(self, event: Event):
         assert isinstance(event, KeyEvent)
@@ -635,11 +664,10 @@ class ALICE(tkinter.Frame):
 
         self.updateXYlims()
 
-        self.updateLinks()
 
-        # self.updateTiepoints()
+        self.updateTiepoints()
 
-        self.canvas.draw()
+        self.canvas_draw()
 
     def relim_callback(self, ax: Axes):
         # callback function that catches any change to the ax(2) limits
@@ -656,7 +684,6 @@ class ALICE(tkinter.Frame):
         self.rect.set_width(xrange2)
         self.rect.set_height(yrange2)
 
-    # print("New axis y-limits are", axes.get_ylim())
 
     def updateUI(self):
         # function called upon change of species and change of profile
@@ -706,9 +733,8 @@ class ALICE(tkinter.Frame):
 
         self.updateTiepoints()
 
-        self.updateLinks()
 
-        self.canvas.draw()
+        self.canvas_draw()
 
     def offset_input(self):
         inputvalue = askstring(title="test", prompt="Enter manual offset value")
@@ -718,9 +744,8 @@ class ALICE(tkinter.Frame):
         self.manualoffsetvalue = float(inputvalue)
 
         self.relim_x()
-        self.updateLinks()
-        # self.updateTiepoints()
-        self.canvas.draw()
+        self.updateTiepoints()
+        self.canvas_draw()
 
     def _quit(self):
         print("goodbye")
@@ -840,23 +865,8 @@ class ALICE(tkinter.Frame):
 
         return anchor1, anchor2
 
-    def updateLinks(self):
-        # Since we draw links on ax2 based on tiepoints on ax1
-        # the links depend on the limits of the axes
-        # this is why we need to keep them separate from the tiepoints
-        # and to update them upon change of axis (while tiepoints naturally follow the axes)
-
-        depth1, signal1, depth2, signal2 = self.get_linedata()
-
-        xp1, xp2 = self.get_tiepoints()
-
-        yp1 = np.interp(xp1, depth1, signal1)
-        yp2 = np.interp(xp2, depth2, signal2)
-
-        xp_links, yp_links = get_links(self.ax[:2], xp1, xp2, yp1, yp2)
-        self.links.set_data(xp_links, yp_links)
-
     def updateTiepoints(self):
+
         # A function to be called each time we manipulate tiepoints:
         # redraws the preview in the bottom graph
         # redraws the tiepoints and
@@ -866,20 +876,25 @@ class ALICE(tkinter.Frame):
 
         depth1, signal1, depth2, signal2 = self.get_linedata()
 
+        # read tiepoints data from dictionaries
         xp1, xp2 = self.get_tiepoints()
 
         yp1 = np.interp(xp1, depth1, signal1)
         yp2 = np.interp(xp2, depth2, signal2)
 
-        # xp_links,yp_links = get_links(self.ax,xp1,xp2,yp1,yp2)
+        xp1t,yp1t = map_to_ax(self.ax[0],self.axt,xp1,yp1)
+        xp2t,yp2t = map_to_ax(self.ax[1],self.axt,xp2,yp2)
+
 
         # update tiepoints
 
-        self.points1.set_offsets(np.c_[xp1, yp1])
-        self.points2.set_offsets(np.c_[xp2, yp2])
+
+        self.points1.set_offsets(np.c_[xp1t, yp1t])
+        self.points2.set_offsets(np.c_[xp2t, yp2t])
         # self.links.set_data(xp_links,yp_links)
 
-        self.updateLinks()
+        xp_links, yp_links = get_links(xp1t, xp2t, yp1t, yp2t)
+        self.links.set_data(xp_links, yp_links)
 
         # update preview
 
@@ -903,7 +918,8 @@ class ALICE(tkinter.Frame):
     def updateXYlims(self):
         self.relim_x()
         self.relim_y()
-        self.canvas.draw()
+        self.updateTiepoints()
+        self.canvas_draw()
 
     def relim_x(self):
         # dates as still used in the get_anchor functions
@@ -944,7 +960,7 @@ class ALICE(tkinter.Frame):
                 anchor2 - max(anchor1 - xlim1[0], anchor2 - xlim2[0]),
                 anchor2 + max(xlim1[1] - anchor1, xlim2[1] - anchor2),
             )
-            self.ax[2].set_xlim(depth2[0], depth2[-1])
+            self.ax3.set_xlim(depth2[0], depth2[-1])
 
     def relim_y(self):
         # TO IMPLEMENT:
@@ -980,11 +996,9 @@ class ALICE(tkinter.Frame):
                 self.ax[0].set_ylim(ylim[0], ylim[1])
                 self.ax[1].set_ylim(ylim[0], ylim[1])
 
-            self.ax[2].set_ylim(ylim[0], ylim[1])
+            self.ax3.set_ylim(ylim[0], ylim[1])
 
     def update_hl(self, xs: tuple[float, float], ys: tuple[float, float]):
-        # pos = sc.get_offsets()[ind["ind"][0]]
-        # print(ind)
         self.pointshl.set_offsets(np.c_[xs, ys])
 
     def update_tagsshow(self, x: float, y: float, tag: str):
@@ -1041,6 +1055,8 @@ class ALICE(tkinter.Frame):
         # select tie points
         self.fig.canvas.mpl_connect("button_press_event", self.on_pick)
 
+        self.fig3.canvas.mpl_connect("button_press_event", self.on_pick3)
+
         # switch between species and profiles with up/down and left/right arrows
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
 
@@ -1076,9 +1092,7 @@ class ALICE(tkinter.Frame):
         self.updateXYlims()
         self.updateTiepoints()
 
-        self.updateLinks()
-
-        self.canvas.draw()
+        self.canvas_draw()
 
     ################################################################
     ################################################################
@@ -1169,7 +1183,6 @@ class ALICE(tkinter.Frame):
         else:
             max_depth = int(max_depth)
 
-        # print(datafiles,metadatafiles,ref_lab,min_depth,max_depth)
 
         # create the dictionary
         # this is a mess, rewrite later to only use one dictionary state
