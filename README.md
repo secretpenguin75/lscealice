@@ -8,9 +8,7 @@ _this doc file is under construction 👷‍♀️_
 
 Depending on your workflow, you can either 
 
-- manual: download and run the jupyter notebook `.ipynb` or the python `.py` file. Make sure you have the right dependencies installed in your python distribution. Currently these include only: `pandas`,`numpy` and `matplotlib`.
-
-- You can also install it using [pipx](https://pipx.pypa.io/latest/installation/) with
+- Install it using [pipx](https://pipx.pypa.io/latest/installation/) with
 
 ```
 pipx install lscealice
@@ -32,5 +30,9 @@ Then within python run
 from lscealice import app
 app.launch()
 ```
+
+## Tutorial
+
+Tutorial and example files are available at [lscealice-tutorial](https://github.com/secretpenguin75/lscealice-tutorial)
 
 Have fun!🐧
