@@ -26,9 +26,10 @@ pip install lscealice
 ```
 
 Then within python run
+
 ```
-from lscealice import app
-app.launch()
+import lscealice
+lscealice.launch()
 ```
 
 ## Tutorial
