@@ -1,30 +1,36 @@
 import os
-from tkinter.filedialog import askopenfilenames, asksaveasfilename, Open
-from tkinter.simpledialog import askstring
+from tkinter.filedialog import asksaveasfilename
+
+import pandas as pd
+
+from .ALICE import ALICE
 
 from .export import load_alig_array
-from .dic import Dic, Tiepoint, initAlignmentFile, load_dic_file, write_dic_file
+from .dic import Dic, load_dic_file, write_dic_file
 
-def tkinter_export_to_csv(out):
-        workdir = os.getcwd()
 
-        ftypes = [("CSV files", "*.csv"), ("All files", "*")]
+def tkinter_export_to_csv(out: pd.DataFrame):
+    workdir = os.getcwd()
 
-        csvfilename = asksaveasfilename(
-            initialdir=workdir,
-            initialfile="Untitled.csv",
-            defaultextension=".csv",
-            filetypes=ftypes,
-        )
+    ftypes = [("CSV files", "*.csv"), ("All files", "*")]
 
-        if csvfilename:
-            out.to_csv(csvfilename, index=True)
+    csvfilename = asksaveasfilename(
+        initialdir=workdir,
+        initialfile="Untitled.csv",
+        defaultextension=".csv",
+        filetypes=ftypes,
+    )
 
-def export_to_csv(filename,species_on_display):
+    if csvfilename:
+        out.to_csv(csvfilename, index=True)
+
+
+def export_to_csv(filename: str, species_on_display: str):
     out = load_alig_array(filename, species_on_display)
     tkinter_export_to_csv(out)
 
-def tkinter_saveStateAs(out):
+
+def tkinter_saveStateAs(out: Dic):
     workdir = os.getcwd()
 
     ftypes = [("Pickle files", "*.pkl"), ("All files", "*")]
@@ -39,37 +45,33 @@ def tkinter_saveStateAs(out):
     if pklfilename is None:  # type: ignore
         # asksaveasfile return `None` if dialog closed with "cancel".
         return
-    
+
     write_dic_file(out, pklfilename)
 
     return pklfilename
 
 
-def saveStateAs(ALICE):
+def saveStateAs(alice: ALICE):
     def dialog():
         new_dic = Dic(
-            tiepoints=ALICE.tiepoints.copy(),
-            cores=ALICE.cores.copy(),
-            metadata=ALICE.metadata.copy(),
+            tiepoints=alice.tiepoints.copy(),
+            cores=alice.cores.copy(),
+            metadata=alice.metadata.copy(),
         )
 
         newfilename = tkinter_saveStateAs(new_dic)
-
-        ALICE.filename = newfilename
+        if newfilename is not None:
+            alice.filename = newfilename
 
     return dialog
 
 
-
-def saveState(ALICE):
-
+def saveState(alice: ALICE):
     def writer():
+        new_dic = load_dic_file(alice.filename)
 
-        new_dic = load_dic_file(ALICE.filename)
+        new_dic["tiepoints"] = alice.tiepoints.copy()
 
-        new_dic["tiepoints"] = ALICE.tiepoints.copy()
-
-        write_dic_file(new_dic, ALICE.filename)
+        write_dic_file(new_dic, alice.filename)
 
     return writer
-

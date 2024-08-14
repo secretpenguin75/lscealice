@@ -2,30 +2,28 @@
 
 import tkinter
 import os.path
-import sys
 
 from lscealice.ALICE import ALICE
 
 
 def main():
-
     root = tkinter.Tk()
 
     ALICE(root)
 
     root.mainloop()
 
-def launch():
 
+def launch():
     main()
 
 
 def quicklaunch():
     root = tkinter.Tk()
 
-    assert os.path.isfile('test.pkl')
+    assert os.path.isfile("test.pkl")
 
-    ALICE(root,filename='test.pkl')
+    ALICE(root, filename="test.pkl")
 
     root.mainloop()
 

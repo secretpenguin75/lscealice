@@ -13,7 +13,7 @@ def load_alig_array(
     species: str,
     vertical_scale: Optional[NDArray[np.float64]] = None,
     labels: Optional[Iterable[str]] = None,
-):
+) -> pd.DataFrame:
     # create an array with
 
     ref_dic, cores_dic = load_profiles_data(aligfile)
