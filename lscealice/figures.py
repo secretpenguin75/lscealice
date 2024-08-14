@@ -1,9 +1,7 @@
-from typing import Union, cast, Optional
-#from typing import Iterable, cast, Optional, Any, Callable
+from typing import Union
+# from typing import Iterable, cast, Optional, Any, Callable
 
-from matplotlib.axes import Axes
 from matplotlib.collections import PathCollection
-from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.backend_bases import LocationEvent
 from numpy.typing import NDArray
@@ -16,14 +14,10 @@ from .magic import combine, transform
 def CreateFigure_main():
     subplots = plt.subplots  # type: ignore
 
-    fig, ax1 = cast(
-        tuple[Figure, tuple[Axes, Axes]],
-        subplots(1),
-    )
+    fig, ax1 = subplots(1)
 
     ax1.tick_params(axis="x", colors="blue")  # type: ignore
     ax1.tick_params(axis="y", colors="blue")  # type: ignore
-
 
     ax2 = fig.add_subplot(111)  # type: ignore
     ax2.patch.set_alpha(0.0)
@@ -38,24 +32,29 @@ def CreateFigure_main():
     ax2.yaxis.set_label_position("right")
 
     # an axt Axes in abstract (0,1) coordinates to plot tiepoints and links
-    axt = fig.add_subplot(111)
+    axt = fig.add_subplot(111)  # type: ignore
 
-    axt.set_xlim(0,1)
-    axt.set_ylim(0,1)
+    axt.set_xlim(0, 1)
+    axt.set_ylim(0, 1)
     # hide the axes completely, and only see the artists in axt
     axt.set_axis_off()
 
     # an axc Axes to receive click events
-    axc = fig.add_subplot(111)
-    axc.set_xlim(0,1)
-    axc.set_ylim(0,1)
-    #axc.set_axis_off()
-    axc.patch.set_alpha(0) #make it completely transparent so we can see ax1 and ax2 underneath.
-    axc.tick_params(axis="y",direction="in", pad=-22)
-    axc.tick_params(axis="x",direction="in", pad=-15)
+    axc = fig.add_subplot(111)  # type: ignore
+    axc.set_xlim(0, 1)
+    axc.set_ylim(0, 1)
+    # axc.set_axis_off()
+    axc.patch.set_alpha(
+        0
+    )  # make it completely transparent so we can see ax1 and ax2 underneath.
+    axc.tick_params(  # type: ignore
+        axis="y", direction="in", pad=-22
+    )
+    axc.tick_params(  # type: ignore
+        axis="x", direction="in", pad=-15
+    )
 
-
-    #fig.tight_layout()
+    # fig.tight_layout()
 
     ax = (ax1, ax2)
 
@@ -66,19 +65,19 @@ def CreateFigure_main():
 
     return fig, ax, axt, axc
 
-def CreateFigure_preview():
 
-    fig,ax = plt.subplots()
+def CreateFigure_preview():
+    fig, ax = plt.subplots()  # type: ignore
     # an axc Axes to receive click events
 
-    axc = fig.add_subplot(111)
-    axc.set_xlim(0,1)
-    axc.set_ylim(0,1)
+    axc = fig.add_subplot(111)  # type: ignore
+    axc.set_xlim(0, 1)
+    axc.set_ylim(0, 1)
     axc.set_axis_off()
-    #axc.patch.set_alpha(0)
+    # axc.patch.set_alpha(0)
     plt.close()
 
-    return fig,ax,axc
+    return fig, ax, axc
 
 
 Artist = Union[PathCollection, Line2D]
