@@ -12,30 +12,6 @@ import numpy as np
 from .plt import plt
 from .magic import combine, transform
 
-def _line(ax, color: str, lw: float = 1, ls: Optional[str] = None):
-    plot = ax.plot([], [], color=color, lw=lw, ls=ls)  # type: ignore
-    return plot[0]
-
-def _vline(ax, color: str):
-    return ax.axvline(np.nan, lw=0.5, color=color)  # type: ignore
-
-def _scatter(ax, color: str):
-    return ax.scatter([], [], color=color, s=50)  # type: ignore
-
-def _text(ax, x: float, y: float, s: str):
-    return ax.text(  # type: ignore
-        x,
-        y,
-        s,
-        transform=ax.transAxes,
-        fontsize=12,
-        fontweight="heavy",
-    )
-
-def _annotate(ax, text: str):
-    return ax.annotate(  # type: ignore
-        text, xy=(0, 0), xytext=(0, 0)
-    )
 
 def CreateFigure_main():
     subplots = plt.subplots  # type: ignore
