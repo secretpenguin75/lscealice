@@ -1,6 +1,6 @@
 import os
 
-from typing import Iterable, cast, Any, Optional
+from typing import Iterable, cast, Any, Optional, Callable
 
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
@@ -30,9 +30,11 @@ from .dic import Tiepoint, initAlignmentFile, load_dic_file
 from .utils import compute_links, depth_sqz_str, map_to_ax, af_func
 from .figures import CreateFigure_main, CreateFigure_preview, eventdist
 from .system import resolve_path
-from .dialogs import export_to_csv, saveState, saveStateAs
+from .dialogtools import export_to_csv, saveState, saveStateAs
 from .draw.limits import update_base_xlims, update_base_ylims
 from .draw.artist import update_tag, update_scatter, line, vline, scatter, text
+
+from .dialogs.newtiepoint import insert_tiepoint_dialog
 
 
 class ALICE(tkinter.Frame):
@@ -59,7 +61,6 @@ class ALICE(tkinter.Frame):
     base_ylim1: tuple[float, float]
     base_xlim2: tuple[float, float]
     base_ylim2: tuple[float, float]
-    top2: tkinter.Toplevel
     ref_depth_sv: tkinter.StringVar
     profile_depth_sv: tkinter.StringVar
 
@@ -122,8 +123,8 @@ class ALICE(tkinter.Frame):
         ##################################################
         # initialize empty scatter plot to show selected points
 
-        self.points1 = scatter(self.axt, "blue")
-        self.points2 = scatter(self.axt, "red")
+        self.points1 = scatter(self.axt, "darkblue")
+        self.points2 = scatter(self.axt, "darkred")
 
         self.links = line(self.axt, "grey", lw=0.5, ls="--")
 
@@ -235,7 +236,7 @@ class ALICE(tkinter.Frame):
         self.toolsMenu = tkinter.Menu(menubar, tearoff=False)
         self.toolsMenu.add_command(
             label="Add tiepoint manually",
-            command=self.open_tiepoint_popup,
+            command=self.open_insert_tiepoint_dialog,
             state="disabled",
         )
         menubar.add_cascade(label="Tools", menu=self.toolsMenu)
@@ -1009,41 +1010,14 @@ class ALICE(tkinter.Frame):
     # Code below is to define the pop up window that allows the user to
     # create a new tiepoint via the Tools menu
 
-    def open_tiepoint_popup(self):
-        self.top2 = tkinter.Toplevel(self)
 
-        top = self.top2
+    def open_insert_tiepoint_dialog(self):
 
-        top.geometry("250x150")
-        top.title("Insert new tiepoint manually")
-
-        tkinter.Label(top, text="profile depth: ").pack(side=tkinter.TOP)
-
-        self.profile_depth_sv = tkinter.StringVar()
-        e = tkinter.Entry(top, width=6, textvariable=self.profile_depth_sv)
-        e.pack(side=tkinter.TOP)
-
-        tkinter.Label(top, text="reference depth: ").pack(side=tkinter.TOP)
-
-        self.ref_depth_sv = tkinter.StringVar()
-        self.maxdepth = tkinter.Entry(top, width=6, textvariable=self.ref_depth_sv)
-        self.maxdepth.pack(side=tkinter.TOP)
-
-        def callback(*_: Any):
-            try:
-                _x = float(self.ref_depth_sv.get()) + float(self.profile_depth_sv.get())
-                self.create_tiepointButton.configure(state="normal")
-            except ValueError:
-                self.create_tiepointButton.configure(state="disabled")
-
-        self.ref_depth_sv.trace_add("write", callback)
-        self.profile_depth_sv.trace_add("write", callback)
-
-        def add_tiepoint(*_: Any):
+        def on_confirm(profile_depth: float, ref_depth: float):
             self.createTiepoint(
                 self.profile_on_display,
-                float(self.profile_depth_sv.get()),
-                float(self.ref_depth_sv.get()),
+                profile_depth,
+                ref_depth,
                 "Manual",
             )
 
@@ -1053,13 +1027,8 @@ class ALICE(tkinter.Frame):
 
             saveState(self)()
 
-            self.top2.destroy()
+        insert_tiepoint_dialog(tkinter.Toplevel(self), on_confirm)
 
-        self.create_tiepointButton = tkinter.Button(
-            master=self, text="Create tiepoint", command=add_tiepoint
-        )
-        self.create_tiepointButton.configure(state="disabled")
-        self.create_tiepointButton.pack(side=tkinter.BOTTOM)
 
     ################################################################
     ################################################################
@@ -1221,3 +1190,5 @@ class ALICE(tkinter.Frame):
                     value
                 ),
             )
+
+

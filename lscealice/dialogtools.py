@@ -3,7 +3,10 @@ from tkinter.filedialog import asksaveasfilename
 
 import pandas as pd
 
-from .ALICE import ALICE
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .ALICE import ALICE
 
 from .export import load_alig_array
 from .dic import Dic, load_dic_file, write_dic_file
@@ -51,7 +54,7 @@ def tkinter_saveStateAs(out: Dic):
     return pklfilename
 
 
-def saveStateAs(alice: ALICE):
+def saveStateAs(alice: 'ALICE'):
     def dialog():
         new_dic = Dic(
             tiepoints=alice.tiepoints.copy(),
@@ -66,7 +69,7 @@ def saveStateAs(alice: ALICE):
     return dialog
 
 
-def saveState(alice: ALICE):
+def saveState(alice: 'ALICE'):
     def writer():
         new_dic = load_dic_file(alice.filename)
 

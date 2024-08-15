@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lscealice"
-version = "0.1.6"
+version = "0.1.8"
 description = "A versatile tkinter interface to align icecore data"
 authors = ["Adrien Ooms"]
 license = "CC0-1.0"
