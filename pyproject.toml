@@ -125,6 +125,7 @@ ignore = [
 ]
 
 [tool.pyright]
+venvPath = "."
 venv = ".venv"
 typeCheckingMode = "strict"
 
