@@ -37,22 +37,3 @@ lscealice.launch()
 Tutorial and example files are available at [lscealice-tutorial](https://github.com/secretpenguin75/lscealice-tutorial)
 
 Have fun!🐧
-
-
-## Contributions
-
-### Development
-
-To setup a development venv, install `poetry`, clone this repo, `cd` into the cloned repo, then run the following
-
-
-```sh
-poetry install --with dev --with test --with type
-```
-
-The locally developed app can then be launched with
-
-
-```sh
-poetry run lscealice
-```
