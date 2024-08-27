@@ -549,8 +549,12 @@ class ALICE(tkinter.Frame):
         self.updateTiepoints()
         self.canvas_draw()
 
-    def on_press(self, event: Event):
-        assert isinstance(event, KeyEvent)
+    def on_press(self, event: Event ):
+
+        #shhhhhhhh
+        #assert isinstance(event, Event)
+
+        #print(event.keysym)
         current_profile = self.profile_on_display
         current_species = self.species_on_display
 
@@ -566,41 +570,41 @@ class ALICE(tkinter.Frame):
             if self.species_on_display in self.cores[profile].keys()
         ]
 
-        if event.key == "+":
+        if event.keysym == "plus":
             current_state = self.minmaxscaling_BooleanVar.get()
             self.minmaxscaling_BooleanVar.set(not (current_state))
 
         # we want to define special key bindings for species often used
-        if event.key == "w":
+        if event.keysym == "w":
             if "MSA" in species_keys_available:
                 self.species_on_display_StringVar.set("MSA")
 
-        if event.key == "s":
+        if event.keysym == "s":
             # two different ways to write sulfate
             if "Sulfate" in species_keys_available:
                 self.species_on_display_StringVar.set("Sulfate")
             elif "SO4" in species_keys_available:
                 self.species_on_display_StringVar.set("SO4")
 
-        if event.key == "up" or event.key == "down":
+        if event.keysym == "Up" or event.keysym == "Down":
             n = species_keys_available.index(current_species)
-            if event.key == "down" and n < len(species_keys_available) - 1:
+            if event.keysym == "Down" and n < len(species_keys_available) - 1:
                 species = species_keys_available[n + 1]
                 self.species_on_display_StringVar.set(species)
 
-            if event.key == "up" and n > 0:
+            if event.keysym == "Up" and n > 0:
                 species = species_keys_available[n - 1]
                 self.species_on_display_StringVar.set(species)
 
         # change profile_key
 
-        if event.key == "right" or event.key == "left":
+        if event.keysym == "Right" or event.keysym == "Left":
             n = profile_keys_available.index(current_profile)
-            if event.key == "right" and n < len(profile_keys_available) - 1:
+            if event.keysym == "Right" and n < len(profile_keys_available) - 1:
                 profile_key = profile_keys_available[n + 1]
                 self.profile_on_display_StringVar.set(profile_key)
 
-            if event.key == "left" and n > 0:
+            if event.keysym == "Left" and n > 0:
                 profile_key = profile_keys_available[n - 1]
                 self.profile_on_display_StringVar.set(profile_key)
 
@@ -966,7 +970,9 @@ class ALICE(tkinter.Frame):
         self.fig3.canvas.mpl_connect("button_press_event", self.on_pick3)
 
         # switch between species and profiles with up/down and left/right arrows
-        self.fig.canvas.mpl_connect("key_press_event", self.on_press)
+        #self.fig.canvas.mpl_connect("key_press_event", self.on_press)
+        self.parent.bind('<Key>', self.on_press)
+
 
         # highlight marked points when hovering
         self.fig.canvas.mpl_connect("motion_notify_event", self.hover)
