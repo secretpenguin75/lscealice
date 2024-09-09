@@ -59,6 +59,7 @@ def initAlignmentFile(
             ## todo later: adjust the code for then sample_date is not defined
             # sample_date = datetime.date(2000,1,1) # just a random date for now
 
+            print(lab)
             core_depth = dfnp[1:, 0].astype(None)
 
             if lab not in new_dic["tiepoints"].keys():

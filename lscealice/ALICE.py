@@ -575,6 +575,10 @@ class ALICE(tkinter.Frame):
             self.minmaxscaling_BooleanVar.set(not (current_state))
 
         # we want to define special key bindings for species often used
+        if event.keysym == "y":
+            if "SSA" in species_keys_available:
+                self.species_on_display_StringVar.set("SSA")
+                
         if event.keysym == "w":
             if "MSA" in species_keys_available:
                 self.species_on_display_StringVar.set("MSA")
