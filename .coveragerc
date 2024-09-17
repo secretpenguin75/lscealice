@@ -1,0 +1,5 @@
+[run]
+omit = *-test.py
+
+[xml]
+output = .coverage.xml

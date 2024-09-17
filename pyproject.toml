@@ -130,7 +130,7 @@ venv = ".venv"
 typeCheckingMode = "strict"
 
 [tool.pytest.ini_options]
-testpaths = ["src"]
+testpaths = ["lscealice"]
 python_files = "*-test.py"
 python_classes = "Test"
 python_functions = "test_*"
