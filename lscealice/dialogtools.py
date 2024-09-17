@@ -54,7 +54,7 @@ def tkinter_saveStateAs(out: Dic):
     return pklfilename
 
 
-def saveStateAs(alice: 'ALICE'):
+def saveStateAs(alice: "ALICE"):
     def dialog():
         new_dic = Dic(
             tiepoints=alice.tiepoints.copy(),
@@ -69,7 +69,7 @@ def saveStateAs(alice: 'ALICE'):
     return dialog
 
 
-def saveState(alice: 'ALICE'):
+def saveState(alice: "ALICE"):
     def writer():
         new_dic = load_dic_file(alice.filename)
 

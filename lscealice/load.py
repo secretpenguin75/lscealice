@@ -1,10 +1,10 @@
-from .dic import load_dic_file
+from .dic import Tiepoint, load_dic_file
 
-def unzip_tiepoints(tiepoints):
 
+def unzip_tiepoints(tiepoints: dict[str, list[Tiepoint]]):
     # converts a tiepoints dic with lists of tiepoints
     # to two dictionaries with sorted tiepoints as array
-    
+
     xp1_dic: dict[str, list[float]] = {}
     xp2_dic: dict[str, list[float]] = {}
 
@@ -21,13 +21,14 @@ def unzip_tiepoints(tiepoints):
         xp2_dic[profile_key] = xp2
 
     return xp1_dic, xp2_dic
-    
+
+
 def load_marked_points(aligfile: str):
     # convert the tiepoints stored in the dictionary to the xp1 and xp2 lists
 
     new_dic = load_dic_file(aligfile)
 
-    return unzip_tiepoints(new_dic['tiepoints'])
+    return unzip_tiepoints(new_dic["tiepoints"])
 
 
 def load_profiles_data(aligfile: str):
@@ -37,11 +38,14 @@ def load_profiles_data(aligfile: str):
     ref_dic = full_dic["cores"]["REF"]
 
     return ref_dic, cores_dic
-    
+
+
 def load_profiles_metadata(aligfile: str):
     full_dic = load_dic_file(aligfile)
 
-    cores_dic = {key: value for key, value in full_dic["metadata"].items() if key != "REF"}
+    cores_dic = {
+        key: value for key, value in full_dic["metadata"].items() if key != "REF"
+    }
     ref_dic = full_dic["metadata"]["REF"]
 
     return ref_dic, cores_dic
