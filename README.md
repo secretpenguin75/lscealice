@@ -6,7 +6,7 @@ _this doc file is under construction 👷‍♀️_
 
 ## Installation
 
-Depending on your workflow, you can either 
+Depending on your workflow, you can either
 
 - Install it using [pipx](https://pipx.pypa.io/latest/installation/) with
 
