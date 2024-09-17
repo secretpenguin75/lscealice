@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-case-conflict
+      - id: check-added-large-files
+      - id: check-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: pretty-format-json
+      - id: debug-statements
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: lint-check
+        name: lint-check
+        types: [python]
+        language: system
+        entry: poetry run tox -e lint-check -- --
+        require_serial: true
+
+      - id: type-check
+        name: type-check
+        language: system
+        types: [python]
+        entry: poetry run tox -e type-check -- --
+        require_serial: true
+
+      - id: licenses
+        name: licenses
+        files: '^poetry.lock$'
+        language: system
+        pass_filenames: false
+        entry: poetry run tox -e licenses -- --
+
+  - repo: meta
+    hooks:
+      - id: check-useless-excludes
