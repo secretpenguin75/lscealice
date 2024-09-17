@@ -1,0 +1,20 @@
+{% extends "!page.html" %}
+{% block body %}
+{% if current_version and latest_version and current_version != latest_version and current_version.name != "latest" %}
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">
+  <strong>
+    {% if current_version.is_released %}
+    You are reading the documentation for {{current_version.name}}.
+    The latest version is <a href="{{ vpathto(latest_version.name) }}">{{latest_version.name}}</a>.
+    {% else %}
+    You are reading the documentation for a development version.
+    The latest release is <a href="{{ vpathto(latest_version.name) }}">{{latest_version.name}}</a>.
+    {% endif %}
+  </strong>
+</p>
+</div>
+{% endif %}
+{{ super() }}
+{% endblock %}%
