@@ -38,7 +38,7 @@ def compute_xlims(
     return native_xlim1, native_xlim2
 
 
-def compute_anchors(alice: 'ALICE'):
+def compute_anchors(alice: "ALICE"):
     offset_mode_str = alice.offset_mode_StringVar.get()
 
     depth1 = alice.cores[alice.profile_on_display][alice.species_on_display]["depth"]
@@ -85,7 +85,7 @@ def compute_anchors(alice: 'ALICE'):
     return anchor1, anchor2
 
 
-def update_base_xlims(alice: 'ALICE'):
+def update_base_xlims(alice: "ALICE"):
     depth1, _signal1, depth2, _signal2 = alice.get_linedata()
 
     # OFFSET
@@ -105,7 +105,7 @@ def update_base_xlims(alice: 'ALICE'):
     alice.ax3.set_xlim(float(np.nanmin(depth2)), float(np.nanmax(depth2)))
 
 
-def update_base_ylims(alice: 'ALICE'):
+def update_base_ylims(alice: "ALICE"):
     # TO IMPLEMENT:
     # USE THE MAX OF THE CURRENT VIEW, NOT THE MAX OF THE ENTIRE PROFILE!!!
 

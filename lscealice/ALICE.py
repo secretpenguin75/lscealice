@@ -1,6 +1,6 @@
 import os
 
-from typing import Iterable, cast, Any, Optional, Callable
+from typing import Iterable, cast, Any, Optional
 
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
@@ -13,7 +13,6 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backend_bases import (
-    KeyEvent,
     MouseButton,
     LocationEvent,
     MouseEvent,
@@ -549,12 +548,7 @@ class ALICE(tkinter.Frame):
         self.updateTiepoints()
         self.canvas_draw()
 
-    def on_press(self, event: Event ):
-
-        #shhhhhhhh
-        #assert isinstance(event, Event)
-
-        #print(event.keysym)
+    def on_press(self, event: tkinter.Event[tkinter.Misc]):
         current_profile = self.profile_on_display
         current_species = self.species_on_display
 
@@ -570,45 +564,47 @@ class ALICE(tkinter.Frame):
             if self.species_on_display in self.cores[profile].keys()
         ]
 
-        if event.keysym == "plus":
+        keysym = event.keysym
+
+        if keysym == "plus":
             current_state = self.minmaxscaling_BooleanVar.get()
             self.minmaxscaling_BooleanVar.set(not (current_state))
 
         # we want to define special key bindings for species often used
-        if event.keysym == "y":
+        if keysym == "y":
             if "SSA" in species_keys_available:
                 self.species_on_display_StringVar.set("SSA")
-                
-        if event.keysym == "w":
+
+        if keysym == "w":
             if "MSA" in species_keys_available:
                 self.species_on_display_StringVar.set("MSA")
 
-        if event.keysym == "s":
+        if keysym == "s":
             # two different ways to write sulfate
             if "Sulfate" in species_keys_available:
                 self.species_on_display_StringVar.set("Sulfate")
             elif "SO4" in species_keys_available:
                 self.species_on_display_StringVar.set("SO4")
 
-        if event.keysym == "Up" or event.keysym == "Down":
+        if keysym == "Up" or keysym == "Down":
             n = species_keys_available.index(current_species)
-            if event.keysym == "Down" and n < len(species_keys_available) - 1:
+            if keysym == "Down" and n < len(species_keys_available) - 1:
                 species = species_keys_available[n + 1]
                 self.species_on_display_StringVar.set(species)
 
-            if event.keysym == "Up" and n > 0:
+            if keysym == "Up" and n > 0:
                 species = species_keys_available[n - 1]
                 self.species_on_display_StringVar.set(species)
 
         # change profile_key
 
-        if event.keysym == "Right" or event.keysym == "Left":
+        if keysym == "Right" or keysym == "Left":
             n = profile_keys_available.index(current_profile)
-            if event.keysym == "Right" and n < len(profile_keys_available) - 1:
+            if keysym == "Right" and n < len(profile_keys_available) - 1:
                 profile_key = profile_keys_available[n + 1]
                 self.profile_on_display_StringVar.set(profile_key)
 
-            if event.keysym == "Left" and n > 0:
+            if keysym == "Left" and n > 0:
                 profile_key = profile_keys_available[n - 1]
                 self.profile_on_display_StringVar.set(profile_key)
 
@@ -974,9 +970,8 @@ class ALICE(tkinter.Frame):
         self.fig3.canvas.mpl_connect("button_press_event", self.on_pick3)
 
         # switch between species and profiles with up/down and left/right arrows
-        #self.fig.canvas.mpl_connect("key_press_event", self.on_press)
-        self.parent.bind('<Key>', self.on_press)
-
+        # self.fig.canvas.mpl_connect("key_press_event", self.on_press)
+        self.parent.bind("<Key>", self.on_press)
 
         # highlight marked points when hovering
         self.fig.canvas.mpl_connect("motion_notify_event", self.hover)
@@ -1020,9 +1015,7 @@ class ALICE(tkinter.Frame):
     # Code below is to define the pop up window that allows the user to
     # create a new tiepoint via the Tools menu
 
-
     def open_insert_tiepoint_dialog(self):
-
         def on_confirm(profile_depth: float, ref_depth: float):
             self.createTiepoint(
                 self.profile_on_display,
@@ -1038,7 +1031,6 @@ class ALICE(tkinter.Frame):
             saveState(self)()
 
         insert_tiepoint_dialog(tkinter.Toplevel(self), on_confirm)
-
 
     ################################################################
     ################################################################
@@ -1200,5 +1192,3 @@ class ALICE(tkinter.Frame):
                     value
                 ),
             )
-
-
